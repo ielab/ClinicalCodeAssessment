@@ -1,0 +1,2 @@
+def getCUIInfos():
+    return
