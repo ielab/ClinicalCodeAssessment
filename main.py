@@ -1,11 +1,10 @@
+import sys
 from flask import Flask, request
-from flask_restful import Resource, Api
 from flask_jsonpify import jsonpify
-from middleware import *
+from flask_restful import Resource, Api
 from waitress import serve
 from werkzeug.utils import secure_filename
-from methods import WaitressConfig, globalConfig, fileFormat
-import sys, os
+from middleware import *
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = globalConfig["UPLOADFOLDER"]
@@ -31,7 +30,7 @@ class uploadCSVFile(Resource):
             res.status_code = 201
             return res
         else:
-            res = jsonpify({"message": "File Type Is Not CSV."})
+            res = jsonpify({"message": "File Type Is Not csv."})
             res.status_code = 400
             return res
 
@@ -39,8 +38,9 @@ class uploadCSVFile(Resource):
 class getCUIInfos(Resource):
     @staticmethod
     def get():
-        res = getCUIInfos()
-        return jsonpify(res)
+        res = jsonpify(processFile())
+        res.status_code = 200
+        return res
 
 
 api.add_resource(uploadCSVFile, "/assess/upload")
