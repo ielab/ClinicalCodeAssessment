@@ -31,7 +31,7 @@ def processFile():
                 temp["DIAGNOSIS"] = row[1]
                 temp["CUI_SET"] = row[2:]
                 content.append(temp)
-    res = getCUIConcepts(content)
+    res = getCUIPreferredTerm(content)
     return res
 
 

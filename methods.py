@@ -9,5 +9,5 @@ def removeUploadedFile():
             os.remove(p)
 
 
-def getCUIConcepts(content):
-    return
+def getCUIPreferredTerm(content):
+    return content
