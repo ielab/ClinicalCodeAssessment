@@ -128,4 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# File from outsouce
 .idea/
+data/
+/test_data
