@@ -16,22 +16,22 @@ class uploadCSVFile(Resource):
     @staticmethod
     def post():
         if "file" not in request.files:
-            res = jsonpify({"message": "No file in request."})
+            res = jsonpify({"message": "No File Found In Request Body."})
             res.status_code = 400
             return res
         file = request.files["file"]
         if file.filename == '':
-            res = jsonpify({"message": "No file uploaded."})
+            res = jsonpify({"message": "No File Uploaded."})
             res.status_code = 400
             return res
         if file and fileFormat(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            res = jsonpify({"message": "File uploaded."})
+            res = jsonpify({"message": "File Upload Successfully."})
             res.status_code = 201
             return res
         else:
-            res = jsonpify({"message": "File type is not csv."})
+            res = jsonpify({"message": "File Type Is Not CSV."})
             res.status_code = 400
             return res
 
@@ -43,8 +43,8 @@ class getCUIInfos(Resource):
         return jsonpify(res)
 
 
-api.add_resource(uploadCSVFile, "/upload")
-api.add_resource(getCUIInfos, "/cuis")
+api.add_resource(uploadCSVFile, "/assess/upload")
+api.add_resource(getCUIInfos, "/assess/info")
 
 if __name__ == "__main__":
     arguments = sys.argv

@@ -1,6 +1,6 @@
 {
   "UMLSURLPREFIX" : "http://linkedlifedata.com/resource/umls/id/",
-  "UPLOADFOLDER" : "/data",
+  "UPLOADFOLDER" : "data",
   "WAITRESS" : {
     "PORT" : 6688,
     "HOST" : "localhost",
