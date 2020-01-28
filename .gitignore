@@ -130,5 +130,5 @@ dmypy.json
 
 # File from outsouce
 .idea/
-data/
 /test_data
+output/results.csv
