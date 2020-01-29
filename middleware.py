@@ -44,10 +44,13 @@ def reset():
     folder = globalConfig["UPLOADFOLDER"] + "/"
     for filename in os.listdir(folder):
         filePath = os.path.join(folder, filename)
-        try:
-            if os.path.isfile(filePath) or os.path.islink(filePath):
-                os.unlink(filePath)
-            elif os.path.isdir(filePath):
-                shutil.rmtree(filePath)
-        except Exception as err:
-            print("Failed To Remove %s. Error: %s" % (filePath, err))
+        filePart = filename.split(".")
+        fileType = filePart[len(filePart) - 1]
+        if fileType != "template" and fileType != "tpl":
+            try:
+                if os.path.isfile(filePath) or os.path.islink(filePath):
+                    os.unlink(filePath)
+                elif os.path.isdir(filePath):
+                    shutil.rmtree(filePath)
+            except Exception as err:
+                print("Failed To Remove %s. Error: %s" % (filePath, err))
