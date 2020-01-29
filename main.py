@@ -26,7 +26,7 @@ class uploadCSVFile(Resource):
         if file and fileFormat(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            res = jsonpify({"message": "File Upload Successfully."})
+            res = jsonpify({"message": "File Uploaded Successfully."})
             res.status_code = 201
             return res
         else:
@@ -43,8 +43,17 @@ class getCUIInfos(Resource):
         return res
 
 
+class resetData(Resource):
+    @staticmethod
+    def post():
+        res = jsonpify(reset())
+        res.status_code = 200
+        return res
+
+
 api.add_resource(uploadCSVFile, "/assess/upload")
 api.add_resource(getCUIInfos, "/assess/info")
+api.add_resource(resetData, "/assess/reset")
 
 if __name__ == "__main__":
     arguments = sys.argv

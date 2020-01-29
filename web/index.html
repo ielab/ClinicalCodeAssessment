@@ -6,9 +6,14 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="icon" href="static/favicon.png" type="image/x-png">
-        <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">-->
-        <link rel="stylesheet" href="static/bootstrap.min.css">
+        <link rel="stylesheet" href="static/spectre.min.css" type="text/css">
+        <link rel="stylesheet" href="static/spectre-icons.min.css" type="text/css">
+        <link rel="stylesheet" href="static/spectre-exp.min.css" type="text/css">
+        <link rel="stylesheet" href="/static/vis.min.css" type="text/css">
         <link rel="stylesheet" href="static/vue-multiselect.min.css" type="text/css">
+        <link rel="stylesheet" href="static/logtail.css" type="text/css">
+        <link rel="stylesheet" href="static/clinicalcodeassessment.css" type="text/css">
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <script src="static/vue.js" type="text/javascript"></script>
         <script src="static/lodash.min.js" type="text/javascript"></script>
     </head>
@@ -16,10 +21,33 @@
     </style>
     <body>
         <div class="container p-2" id="app">
-            <div class="divider"></div>
             <div class="panel p-2" style="overflow:hidden;">
                 <h2 style="margin-left: 2%; margin-top: 1%">Clinical Code Assessment</h2>
-                <div class="divider" data-content="GENERAL INFORMATION"></div>
+                <div class="divider" data-content="FILE UPLOAD"></div>
+                <div class="form-group">
+                    <div class="col-3">
+                        <label class="form-label" for="input-example-1">
+                            <strong>Select The CSV File To Upload:</strong>
+                        </label>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="col-3">
+                        <input class="form-input" type="file" id="file-input" ref="file" name="file" v-on:change="handleFileUpload()"/>
+                    </div>
+                    <div class="divider"></div>
+                    <div id="msgbox">
+                        <span id="msg"></span>
+                    </div>
+                    <button style="margin-top: 1%" name="submit" type="submit" v-if="!uploaded" class="btn btn-primary" id="upload-file" v-on:click="uploadFile()">
+                        <i class="icon icon-upload"></i> Upload
+                    </button>
+                    <button style="margin-top: 1%" name="submit" type="submit" v-if="uploaded" class="btn btn-primary" id="parse-file" v-on:click="parseFile()">
+                        <i class="icon icon-menu"></i> Parse
+                    </button>
+                    <button style="margin-top: 1%" name="reset" class="btn" v-on:click="reset">
+                        <i class="icon icon-refresh"></i> Reset
+                    </button>
+                </div>
             </div>
         </div>
         <!--suppress JSUnusedGlobalSymbols -->
@@ -28,15 +56,77 @@
                 delimiters: ["[[", "]"],
                 el: "#app",
                 data: {
-
+                    file: null,
+                    uploaded: false,
+                    error: false,
                 },
                 methods: {
+                    handleFileUpload: function () {
+                        this.uploaded = false;
+                        if (this.$refs.file.files.length == 0) {
+                            alert("csv File is Required.");
+                            return;
+                        }
+                        this.file = this.$refs.file.files[0];
+                        var filename = this.file.name;
+                        var fileType = filename.split(".")[1];
+                        if (fileType != "csv") {
+                            alert("File Type Not Supported, Need csv File.");
+                            location.reload();
+                            return;
+                        }
+                    },
+                    uploadFile: function () {
+                        document.getElementById("msg").classList = [];
+                        document.getElementById("msg").innerText = null;
+                        document.getElementById("file-input").disabled = false;
+                        var formData =  new FormData();
+                        formData.append("file", this.file);
+                        axios.post("http://localhost:6688/assess/upload", formData)
+                        .then(response => {
+                            if (response.status == 201) {
+                                var msg = response.data["message"];
+                                document.getElementById("msg").innerText = msg;
+                                this.uploaded = true;
+                                document.getElementById("msg").classList.add("label");
+                                document.getElementById("msg").classList.add("label-success");
+                                document.getElementById("file-input").disabled = true;
+                            } else {
+                                var msg = response.data["message"];
+                                document.getElementById("msg").innerText = msg;
+                                this.uploaded = false;
+                                document.getElementById("msg").classList.add("label");
+                                document.getElementById("msg").classList.add("label-warning");
+                            }
+                        })
+                        .catch(error => {
+                            document.getElementById("msg").innerText = error;
+                            document.getElementById("msg").classList.add("label");
+                            document.getElementById("msg").classList.add("label-error");
+                            this.uploaded = false;
+                        });
+                    },
+                    parseFile: function () {
 
+                    },
+                    reset: function () {
+                        var request = new XMLHttpRequest();
+                        request.addEventListener("load", function (ev) {
+                            if (ev.currentTarget.status == 200) {
+                                console.log("RESETED!");
+                                location.reload();
+                            } else {
+                                document.getElementById("msg").innerText = "RESET FAILED";
+                                document.getElementById("msg").classList.add("label");
+                                document.getElementById("msg").classList.add("label-error");
+                            }
+                        });
+                        request.open("POST", "http://localhost:6688/assess/reset");
+                        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+                        request.send(null);
+                    }
                 }
             })
         </script>
-        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </body>
 </html>

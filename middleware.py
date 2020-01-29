@@ -1,6 +1,7 @@
 import csv
 import glob
 import json
+import shutil
 from methods import *
 
 
@@ -31,9 +32,22 @@ def processFile():
                 temp["DIAGNOSIS"] = row[1]
                 temp["CUI_SET"] = row[2:]
                 content.append(temp)
-    res = getCUIPreferredTerm(content)
+    res = getCUIPreferredTerms(content)
     return res
 
 
 def fileFormat(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in EXTENSIONS
+
+
+def reset():
+    folder = globalConfig["UPLOADFOLDER"] + "/"
+    for filename in os.listdir(folder):
+        filePath = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(filePath) or os.path.islink(filePath):
+                os.unlink(filePath)
+            elif os.path.isdir(filePath):
+                shutil.rmtree(filePath)
+        except Exception as err:
+            print("Failed To Remove %s. Error: %s" % (filePath, err))

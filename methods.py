@@ -9,5 +9,14 @@ def removeUploadedFile():
             os.remove(p)
 
 
-def getCUIPreferredTerm(content):
+def getCUIPreferredTerm(cui):
+    return cui
+
+
+def getCUIPreferredTerms(content):
+    for item in content:
+        print("ID: ", item["ID"])
+        print("DIAGNOSIS: ", item["DIAGNOSIS"])
+        print("CUI_SET: ", item["CUI_SET"])
+        print("-------------------------------------------------------------------------------------------")
     return content
