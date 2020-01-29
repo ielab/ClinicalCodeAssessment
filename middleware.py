@@ -23,6 +23,7 @@ def processFile():
     path = globalConfig["UPLOADFOLDER"] + "/*.csv"
     files = glob.glob(path)
     content = []
+    print(files[0])
     with open(files[0], "r") as file:
         reader = csv.reader(file)
         for row in reader:
@@ -32,7 +33,7 @@ def processFile():
                 temp["DIAGNOSIS"] = row[1]
                 temp["CUI_SET"] = row[2:]
                 content.append(temp)
-    res = getCUIPreferredTerms(content)
+    res = getCUIPreferredTerms(content, globalConfig)
     return res
 
 
