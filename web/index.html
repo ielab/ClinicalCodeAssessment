@@ -16,9 +16,50 @@
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <script src="static/vue.js" type="text/javascript"></script>
         <script src="static/lodash.min.js" type="text/javascript"></script>
+        <style>
+            .accordion-ac {
+                background-color: #eee;
+                color: #444;
+                cursor: pointer;
+                padding: 18px;
+                width: 100%;
+                border: none;
+                text-align: left;
+                outline: none;
+                font-size: 15px;
+                transition: 0.4s;
+            }
+
+            .active-ac, .accordion-ac:hover {
+                background-color: #ccc;
+            }
+
+            .accordion-ac:after {
+                content: '\002B';
+                color: #777;
+                font-weight: bold;
+                float: right;
+                margin-left: 5px;
+            }
+
+            .active-ac:after {
+                content: "\2212";
+            }
+
+            .panel-ac {
+                padding: 0 18px;
+                background-color: white;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.2s ease-out;
+            }
+
+            .span-sm {
+                font-size: 10px;
+                line-height: 0.0rem;
+            }
+        </style>
     </head>
-    <style>
-    </style>
     <body>
         <div class="container p-2" id="app">
             <div class="panel p-2" style="overflow:hidden;">
@@ -48,19 +89,188 @@
                         <i class="icon icon-refresh"></i> Reset
                     </button>
                 </div>
+                <div class="divider"></div>
+                <ul style="list-style-type: none" slot="body">
+                    <li v-for="item in cuiInfo">
+                        <button class="accordion-ac" v-bind:id="item.id" v-on:click="togglePanel(item.id)">[[ item.id ]]. [[ item.diagnosis ]]</button>
+                        <div class="panel-ac" v-bind:id="item.id">
+                            <ul style="list-style-type: none" slot="body">
+                                <li v-for="c in item.cui">
+                                    Preferred Term: <a v-bind:href="c.url" target="_blank">[[ c.pref_term ]]</a><br>
+                                    <span class="span-sm">CUI: [[ c.cui ]]</span><br>
+                                    <label class="form-radio form-inline">
+                                        <input type="radio" v-bind:id="c.id" value="Perfect" v-model="c.rel"><i class="form-icon"></i> Perfect
+                                    </label>
+                                    <label class="form-radio form-inline">
+                                        <input type="radio" v-bind:id="c.id" value="Partial" v-model="c.rel"><i class="form-icon"></i> Partial
+                                    </label>
+                                    <label class="form-radio form-inline">
+                                        <input type="radio" v-bind:id="c.id" value="Poor" v-model="c.rel"><i class="form-icon"></i> Poor
+                                    </label>
+                                    <div class="divider">
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+                <button style="margin-top: 1%" class="btn btn-primary" id="save" v-on:click="saveResult">
+                    <i class="icon icon-download"></i> Save
+                </button>
             </div>
         </div>
         <!--suppress JSUnusedGlobalSymbols -->
         <script>
             var vm = new Vue({
-                delimiters: ["[[", "]"],
+                delimiters: ["[[", "]]"],
                 el: "#app",
                 data: {
                     file: null,
                     uploaded: false,
                     error: false,
+                    cuiInfo: [
+                        {
+                            "id": 1,
+                            "diagnosis": "acute abnormal pain",
+                            "cui" : [
+                                {
+                                    "id" : 1,
+                                    "cui" : "C0000833",
+                                    "pref_term" : "Abecess",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0000833",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 2,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+
+                                },
+                                {
+                                    "id" : 3,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 4,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 5,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                }
+                            ]
+                        },
+                        {
+                            "id": 2,
+                            "diagnosis": "acute abnormal",
+                            "cui" : [
+                                {
+                                    "id" : 1,
+                                    "cui" : "C0000833",
+                                    "pref_term" : "Abecess",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0000833",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 2,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 3,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 4,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 5,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                }
+                            ]
+                        },
+                        {
+                            "id": 3,
+                            "diagnosis": "acute pain",
+                            "cui" : [
+                                {
+                                    "id" : 1,
+                                    "cui" : "C0000833",
+                                    "pref_term" : "Abecess",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0000833",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 2,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 3,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 4,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                },
+                                {
+                                    "id" : 5,
+                                    "cui" : "C0149520",
+                                    "pref_term" : "Pain",
+                                    "url" : "http://linkedlifedata.com/resource/umls/id/C0149520",
+                                    "rel" : null,
+                                }
+                            ]
+                        }
+                    ]
                 },
                 methods: {
+                    togglePanel: function (id) {
+                        var otherPanels = document.getElementsByClassName("panel-ac");
+                        for (var i = 0; i < otherPanels.length; i++) {
+                            if (otherPanels[i].id != id.toString()) {
+                                otherPanels[i].style.maxHeight = null;
+                            }
+                        }
+                        var acc = document.getElementById(id);
+                        var panel = acc.nextElementSibling;
+                        acc.classList.toggle("active-ac");
+                        if (panel.style.maxHeight) {
+                          panel.style.maxHeight = null;
+                        } else {
+                          panel.style.maxHeight = panel.scrollHeight + "px";
+                        }
+                    },
                     handleFileUpload: function () {
                         this.uploaded = false;
                         if (this.$refs.file.files.length == 0) {
@@ -107,7 +317,9 @@
                         });
                     },
                     parseFile: function () {
-
+                        var parseBtn = document.getElementById("parse-file");
+                        parseBtn.classList.add("loading");
+                        parseBtn.disabled = true;
                     },
                     reset: function () {
                         var request = new XMLHttpRequest();
@@ -124,6 +336,16 @@
                         request.open("POST", "http://localhost:6688/assess/reset");
                         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
                         request.send(null);
+                    },
+                    saveResult: function () {
+                        for (index in this.cuiInfo) {
+                            for (i in this.cuiInfo[index].cui) {
+                                if (this.cuiInfo[index].cui[i].rel == null) {
+                                    alert("Need To Finish All Term Judgement Before Save.")
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             })
