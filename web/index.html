@@ -212,11 +212,7 @@
                                 var resStr = ev.currentTarget.responseText;
                                 var res = JSON.parse(resStr);
                                 self.cuiInfo = res;
-                                console.log(res)
                                 parseBtn.classList.remove("loading");
-                                console.log(self.ready)
-                                console.log(self.init)
-                                console.log(self.cuiInfo)
                             }
                         });
                         request.open("GET", "http://localhost:6688/assess/info?pretty");
