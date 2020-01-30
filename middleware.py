@@ -1,7 +1,7 @@
 import csv
 import glob
-import json
 import shutil
+import json
 from methods import *
 
 
@@ -11,8 +11,8 @@ print("Loading Config File...")
 with open('Config.json') as configFile:
     config = json.load(configFile)
 globalConfig = config
-umlsPrefix = config["UMLSURLPREFIX"]
 WaitressConfig = config["WAITRESS"]
+ESConfig = config["ES"]
 print("Config File Loaded.")
 print("--------------------------------------------------")
 
@@ -20,10 +20,12 @@ EXTENSIONS = set(globalConfig["EXTENSIONS"])
 
 
 def processFile():
-    path = globalConfig["UPLOADFOLDER"] + "/*.csv"
-    files = glob.glob(path)
+    csvPath = globalConfig["UPLOADFOLDER"] + "/*.csv"
+    CSVPath = globalConfig["UPLOADFOLDER"] + "/*.CSV"
+    csvFiles = glob.glob(csvPath)
+    CSVFiles = glob.glob(CSVPath)
+    files = csvFiles + CSVFiles
     content = []
-    print(files[0])
     with open(files[0], "r") as file:
         reader = csv.reader(file)
         for row in reader:
@@ -33,7 +35,7 @@ def processFile():
                 temp["DIAGNOSIS"] = row[1]
                 temp["CUI_SET"] = row[2:]
                 content.append(temp)
-    res = getCUIPreferredTerms(content, globalConfig)
+    res = getCUIPreferredTerms(content, ESConfig)
     return res
 
 

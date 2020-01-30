@@ -16,21 +16,25 @@ class uploadCSVFile(Resource):
     def post():
         if "file" not in request.files:
             res = jsonpify({"message": "No File Found In Request Body."})
+            res.headers["Access-Control-Allow-Origin"] = "*"
             res.status_code = 400
             return res
         file = request.files["file"]
         if file.filename == '':
             res = jsonpify({"message": "No File Uploaded."})
+            res.headers["Access-Control-Allow-Origin"] = "*"
             res.status_code = 400
             return res
         if file and fileFormat(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             res = jsonpify({"message": "File Uploaded Successfully."})
+            res.headers["Access-Control-Allow-Origin"] = "*"
             res.status_code = 201
             return res
         else:
             res = jsonpify({"message": "File Type Is Not csv."})
+            res.headers["Access-Control-Allow-Origin"] = "*"
             res.status_code = 400
             return res
 
@@ -39,6 +43,7 @@ class getCUIInfos(Resource):
     @staticmethod
     def get():
         res = jsonpify(processFile())
+        res.headers["Access-Control-Allow-Origin"] = "*"
         res.status_code = 200
         return res
 
@@ -48,6 +53,7 @@ class resetData(Resource):
     def post():
         res = jsonpify(reset())
         res.status_code = 200
+        res.headers["Access-Control-Allow-Origin"] = "*"
         return res
 
 
