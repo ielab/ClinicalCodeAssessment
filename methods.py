@@ -1,13 +1,4 @@
-import os
 import requests
-
-
-def removeUploadedFile():
-    directory = "data"
-    for path in os.listdir(directory):
-        p = os.path.join(directory, path)
-        if os.path.isfile(p):
-            os.remove(p)
 
 
 def getOneCUIInfo(item, ES):
@@ -75,7 +66,82 @@ def getCUIPreferredTerms(content, ES):
         temp = {
             "id": item["ID"],
             "diagnosis": item["DIAGNOSIS"],
+            "unchecked": len(cui),
             "cuis": cui
         }
         res.append(temp)
     return res
+
+
+def getProgress(user, uid, progressConfig):
+    header = {
+        "Content-Type": "application/json"
+    }
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "match": {
+                            "user": user
+                        },
+                        "match": {
+                            "_id": uid
+                        }
+                    }
+                ]
+            }
+        }
+    }
+    url = progressConfig["URL"] + progressConfig["INDEX"] + "_search?pretty"
+    response = requests.post(url, data=None, json=query, headers=header)
+    res = response.json()
+    return res
+
+
+def createProgress(data, progressConfig):
+    header = {
+        "Content-Type": "application/json"
+    }
+    url = progressConfig["URL"] + progressConfig["INDEX"] + "_doc/?refresh=true"
+    response = requests.post(url, data=None, json=data, headers=header)
+    res = response.json()
+    return res
+
+
+def updateProgress(uid, data, progressConfig):
+    header = {
+        "Content-Type": "application/json"
+    }
+    url = progressConfig["URL"] + progressConfig["INDEX"] + "_doc/" + uid + "?refresh=true"
+    response = requests.post(url, data=None, json=data, headers=header)
+    res = response.json()
+    return res
+
+
+def getUserUniqueID(user, progressConfig):
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "match": {
+                            "user": user
+                        }
+                    }
+                ]
+            }
+        }
+    }
+    header = {
+        "Content-Type": "application/json"
+    }
+    url = progressConfig["URL"] + progressConfig["INDEX"] + "_search?pretty"
+    response = requests.post(url, data=None, json=query, headers=header)
+    content = response.json()
+    hit = content["hits"]["total"]["value"]
+    if hit > 0:
+        userId = content["hits"]["hits"][0]["_id"]
+    else:
+        userId = None
+    return userId

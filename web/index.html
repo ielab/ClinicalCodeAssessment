@@ -13,9 +13,6 @@
         <link rel="stylesheet" href="static/vue-multiselect.min.css" type="text/css">
         <link rel="stylesheet" href="static/logtail.css" type="text/css">
         <link rel="stylesheet" href="static/clinicalcodeassessment.css" type="text/css">
-        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-        <script src="static/vue.js" type="text/javascript"></script>
-        <script src="static/lodash.min.js" type="text/javascript"></script>
         <style>
             /* Thanks to https://www.w3schools.com/howto/howto_js_accordion.asp */
             .accordion-ac {
@@ -36,15 +33,10 @@
             }
 
             .accordion-ac:after {
-                content: '\002B';
                 color: #777;
                 font-weight: bold;
                 float: right;
                 margin-left: 5px;
-            }
-
-            .active-ac:after {
-                content: "\2212";
             }
 
             .panel-ac {
@@ -65,53 +57,50 @@
         <div class="container p-2" id="app">
             <div class="panel p-2" style="overflow:hidden;">
                 <h2 style="margin-left: 2%; margin-top: 1%">Clinical Code Assessment</h2>
-                <div class="divider" data-content="FILE UPLOAD"></div>
-                <div class="form-group">
-                    <div class="col-3">
-                        <label class="form-label" for="input-example-1">
-                            <strong>Select The CSV File To Upload:</strong>
-                        </label>
+                <div class="modal active" id="user">
+                    <a href="#/" class="modal-overlay" aria-label="Close" v-on:click="closeModal"></a>
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <button class="btn btn-sm float-right" v-on:click="closeModal"><i class="icon icon-cross"></i></button>
+                            <div class="modal-title h5">USER INFO</div>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="modal-body">
+                            <div class="content">
+                                <div class="form-group">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" id="userNa" autofocus="autofocus" class="form-input" v-model="username" placeholder="Username" v-on:keyup="closeOnKey"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                        <button id="modalCloseBtn" class="btn btn-primary" v-on:click="closeModal">Proceed</button>
                     </div>
-                    <div class="divider"></div>
-                    <div class="col-3">
-                        <input class="form-input" type="file" id="file-input" ref="file" name="file" v-on:change="handleFileUpload()"/>
-                    </div>
-                    <div class="divider"></div>
-                    <div id="msgbox">
-                        <span id="msg"></span>
-                    </div>
-                    <button style="margin-top: 1%" v-if="!uploaded" class="btn btn-primary" id="upload-file" v-on:click="uploadFile()">
-                        <i class="icon icon-upload"></i> Upload
-                    </button>
-                    <button style="margin-top: 1%" v-if="uploaded" class="btn btn-primary" id="parse-file" v-on:click="parseFile()">
-                        <i class="icon icon-menu"></i> Parse
-                    </button>
-                    <button style="margin-top: 1%" name="reset" class="btn" v-on:click="reset">
-                        <i class="icon icon-refresh"></i> Reset
-                    </button>
+                  </div>
                 </div>
             </div>
             <div v-if="init" class="panel p-2">
+                <div class="divider" data-content="CONTENT"></div>
                 <center><img v-if="init && !ready" style="width: 15%; margin-top: 0" src="static/Typing-1s-200px.gif"/></center>
                 <ul style="list-style-type: none">
                     <li v-if="ready && cuiInfo != null" v-for="item in cuiInfo">
-                        <button class="accordion-ac" v-bind:id="item.id" v-on:click="togglePanel(item.id)">[[ item.id ]]. [[ item.diagnosis ]]</button>
+                        <button class="accordion-ac" v-bind:id="item.id" v-on:click="togglePanel(item.id)">[[ item.id ]]. [[ item.diagnosis ]]<span v-if="item.unchecked != 0" class="label label-warning float-right" style="width: 4%; text-align: center">[[ item.unchecked ]]</span><span v-if="item.unchecked === 0" class="label label-success float-right" style="text-align: center">FINISH</span></button>
                         <div class="panel-ac" v-bind:id="item.id">
                             <ul style="list-style-type: none">
                                 <li v-for="c in item.cuis">
                                     Preferred Term: <a v-bind:href="c.url" target="_blank">[[ c.pref_term ]]</a><br>
                                     <span class="span-sm">CUI: [[ c.cui ]]</span><br>
                                     <label class="form-radio form-inline">
-                                        <input type="radio" value="Acceptable" v-model="c.rel"><i class="form-icon"></i> Acceptable
+                                        <input type="radio" value="Acceptable" v-model="c.rel" v-on:click="updateStatus()"><i class="form-icon"></i> Acceptable
                                     </label>
                                     <label class="form-radio form-inline">
-                                        <input type="radio" value="Partial" v-model="c.rel"><i class="form-icon"></i> Partial
+                                        <input type="radio" value="Partial" v-model="c.rel" v-on:click="updateStatus()"><i class="form-icon"></i> Partial
                                     </label>
                                     <label class="form-radio form-inline">
-                                        <input type="radio" value="Poor" v-model="c.rel"><i class="form-icon"></i> Poor
+                                        <input type="radio" value="Poor" v-model="c.rel" v-on:click="updateStatus()"><i class="form-icon"></i> Poor
                                     </label>
                                     <label class="form-radio form-inline">
-                                        <input type="radio" value="Incorrect" v-model="c.rel"><i class="form-icon"></i> Incorrect
+                                        <input type="radio" value="Incorrect" v-model="c.rel" v-on:click="updateStatus()"><i class="form-icon"></i> Incorrect
                                     </label>
                                     <div class="divider"></div>
                                 </li>
@@ -125,20 +114,57 @@
                 <link id="download"/>
             </div>
         </div>
+        <script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script type="text/javascript" src="static/vue.js"></script>
+        <script type="text/javascript" src="static/lodash.min.js"></script>
         <!--suppress JSUnusedGlobalSymbols -->
         <script>
             var vm = new Vue({
                 delimiters: ["[[", "]]"],
                 el: "#app",
                 data: {
-                    file: null,
-                    uploaded: false,
-                    error: false,
                     cuiInfo: null,
                     ready: false,
                     init: false,
+                    username: null,
+                    userId: null,
+                    cookie: false,
+                    finished: false,
                 },
                 methods: {
+                    updateStatus: _.debounce(function () {
+                        let self = this;
+                        var cuiInfo = self.cuiInfo;
+                        for (var i = 0; i < cuiInfo.length; i++) {
+                            var cuis = cuiInfo[i]["cuis"];
+                            var unchecked = cuis.length;
+                            for (var k = 0; k < cuis.length; k++) {
+                                if (cuis[k]["rel"] != null) {
+                                    unchecked--;
+                                }
+                            }
+                            console.log(unchecked)
+                            cuiInfo[i]["unchecked"] = unchecked;
+                        }
+                        self.cuiInfo = cuiInfo;
+                        self.updateProgress();
+                    }, 250, {'maxWait': 1000}),
+                    closeOnKey: function (e) {
+                        if (e.keyCode === 13) {
+                            e.preventDefault();
+                            document.getElementById("modalCloseBtn").click();
+                        }
+                    },
+                    closeModal: function () {
+                        let self = this;
+                        if (self.username == null) {
+                            alert("Username Required");
+                        } else {
+                            var modal = document.getElementById("user");
+                            modal.classList.remove("active");
+                        }
+                        self.getUserId();
+                    },
                     togglePanel: function (id) {
                         var otherPanels = document.getElementsByClassName("panel-ac");
                         for (var i = 0; i < otherPanels.length; i++) {
@@ -155,90 +181,26 @@
                           panel.style.maxHeight = panel.scrollHeight + "px";
                         }
                     },
-                    handleFileUpload: function () {
+                    parseFile: function () {
                         let self = this;
-                        self.uploaded = false;
-                        if (self.$refs.file.files.length == 0) {
-                            alert("csv File is Required.");
-                            return;
-                        }
-                        self.file = self.$refs.file.files[0];
-                        var filename = self.file.name;
-                        var fileType = filename.split(".")[1];
-                        if (fileType != "csv") {
-                            alert("File Type Not Supported, Need csv File.");
-                            location.reload();
-                            return;
-                        }
-                    },
-                    uploadFile: function () {
-                        let self = this;
-                        document.getElementById("msg").classList = [];
-                        document.getElementById("msg").innerText = null;
-                        document.getElementById("file-input").disabled = false;
-                        var formData =  new FormData();
-                        formData.append("file", self.file);
-                        axios.post("http://localhost:6688/assess/upload", formData)
+                        var url = "http://localhost:6688/assess/parse";
+                        axios.get(url)
                         .then(response => {
-                            if (response.status == 201) {
-                                var msg = response.data["message"];
-                                document.getElementById("msg").innerText = msg;
-                                self.uploaded = true;
-                                document.getElementById("msg").classList.add("label");
-                                document.getElementById("msg").classList.add("label-success");
-                                document.getElementById("file-input").disabled = true;
-                            } else {
-                                var msg = response.data["message"];
-                                document.getElementById("msg").innerText = msg;
-                                self.uploaded = false;
-                                document.getElementById("msg").classList.add("label");
-                                document.getElementById("msg").classList.add("label-warning");
+                            if (response.status == 200) {
+                                self.cuiInfo = response.data;
                             }
                         })
                         .catch(error => {
-                            document.getElementById("msg").innerText = error;
-                            document.getElementById("msg").classList.add("label");
-                            document.getElementById("msg").classList.add("label-error");
-                            self.uploaded = false;
+                            console.log(error);
                         });
-                    },
-                    parseFile: function () {
-                        let self = this;
-                        self.init = true;
-                        var parseBtn = document.getElementById("parse-file");
-                        parseBtn.classList.add("loading");
-                        parseBtn.disabled = true;
-                        self.ready = false;
-                        var request = new XMLHttpRequest();
-                        request.addEventListener("load", function (ev) {
-                            if (ev.currentTarget.status == 200) {
-                                self.ready = true;
-                                var resStr = ev.currentTarget.responseText;
-                                var res = JSON.parse(resStr);
-                                self.cuiInfo = res;
-                                parseBtn.classList.remove("loading");
-                            }
-                        });
-                        request.open("GET", "http://localhost:6688/assess/info?pretty");
-                        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                        request.send(null);
                     },
                     reset: function () {
-                        var request = new XMLHttpRequest();
-                        request.addEventListener("load", function (ev) {
-                            if (ev.currentTarget.status == 200) {
-                                console.log("RESETED!");
-                                location.reload();
-                            } else {
-                                document.getElementById("msg").innerText = "RESET FAILED";
-                                document.getElementById("msg").classList.add("label");
-                                document.getElementById("msg").classList.add("label-error");
-                            }
-                        });
-                        request.open("POST", "http://localhost:6688/assess/reset");
-                        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-                        request.setRequestHeader("Connection", "keep-alive")
-                        request.send(null);
+                        this.cuiInfo = null;
+                        this.ready = false;
+                        this.init = false;
+                        this.finished = false;
+                        document.getElementById("msg").classList = [];
+                        document.getElementById("msg").innerText = null;
                     },
                     saveResult: function () {
                         let self = this;
@@ -250,14 +212,14 @@
                                 }
                             }
                         }
+                        self.finished = true;
+                        self.updateProgress();
                         var data, filename, link;
                         var csv = self.convertToCSV({
                             data: self.cuiInfo
                         });
                         if (csv == null) {
-                            document.getElementById("msg").innerText = "No CSV File Generated.";
-                            document.getElementById("msg").classList.add("label");
-                            document.getElementById("msg").classList.add("label-error");
+                            console.log("No CSV File Generated.")
                             return null;
                         }
                         filename = 'export.csv';
@@ -274,9 +236,7 @@
                         var data;
                         data = args.data || null;
                         if (data == null || !data.length) {
-                            document.getElementById("msg").innerText = "Formating Error.";
-                            document.getElementById("msg").classList.add("label");
-                            document.getElementById("msg").classList.add("label-error");
+                            console.log("Formating Error.");
                             return null;
                         }
                         columnDelimiter = ',';
@@ -297,6 +257,90 @@
 
                         }
                         return result;
+                    },
+                    getUserId: function () {
+                        let self = this;
+                        self.init = true;
+                        self.ready = false;
+                        var url = "http://localhost:6688/assess/userid?u=" + self.username;
+                        axios.get(url)
+                        .then(response => {
+                            if (response.status == 200) {
+                                var content = response.data;
+                                if (content["user_id"] == null) {
+                                    self.createProgress(self.username);
+                                } else {
+                                    self.userId = content["user_id"];
+                                    self.getProgress(self.userId, self.username)
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+
+                    },
+                    getProgress: function (userid, username) {
+                        let self = this;
+                        var url = "http://localhost:6688/assess/progress/get?u=" + username + "&uid=" + userid;
+                        axios.get(url)
+                        .then(response => {
+                            if (response.status == 200) {
+                                var content = response.data;
+                                var source = content["hits"]["hits"][0]["_source"];
+                                self.finished = source["finished"];
+                                var temp = source["progress"];
+                                temp.replace("\'", "\"");
+                                console.log(temp);
+                                var progress = JSON.parse(source["progress"]);
+                                self.cuiInfo = progress;
+                                self.ready = true;
+                            }
+                        })
+                        .catch(error => {
+                           console.log(error);
+                        });
+                    },
+                    createProgress: function (username) {
+                        let self = this;
+                        self.parseFile();
+                        var url = "http://localhost:6688/assess/progress/create?u=" + username;
+                        var data = {
+                            "user": username,
+                            "progress": JSON.stringify(self.cuiInfo),
+                            "finished": false
+                        }
+                        axios.post(url, data)
+                        .then(response => {
+                            if (response.status == 201 && response.data["result"] == "created") {
+                                var content = response.data;
+                                self.userId = content["_id"];
+                                self.ready = true;
+                            } else {
+                                self.createProgress(username);
+                            }
+                        })
+                        .catch(error => {
+                           console.log(error);
+                        });
+                    },
+                    updateProgress: function () {
+                        let self = this;
+                        var url = "http://localhost:6688/assess/progress/update?uid=" + self.userId;
+                        var data = {
+                            "user": self.username,
+                            "progress": JSON.stringify(self.cuiInfo),
+                            "finished": self.finished
+                        }
+                        axios.post(url, data)
+                        .then(response => {
+                            if (response.status == 200 && response.data["result"] == "updated") {
+                                console.log("Progress Updated");
+                            }
+                        })
+                        .catch(error => {
+                           console.log(error);
+                        });
                     }
                 }
             })

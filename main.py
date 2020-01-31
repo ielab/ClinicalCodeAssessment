@@ -1,65 +1,67 @@
 import sys
 from flask import Flask, request
+from flask_cors import CORS
 from flask_jsonpify import jsonpify
 from flask_restful import Resource, Api
 from waitress import serve
-from werkzeug.utils import secure_filename
 from middleware import *
 
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = globalConfig["UPLOADFOLDER"]
+CORS(app)
 api = Api(app)
 
 
-class uploadCSVFile(Resource):
-    @staticmethod
-    def post():
-        if "file" not in request.files:
-            res = jsonpify({"message": "No File Found In Request Body."})
-            res.headers["Access-Control-Allow-Origin"] = "*"
-            res.status_code = 400
-            return res
-        file = request.files["file"]
-        if file.filename == '':
-            res = jsonpify({"message": "No File Uploaded."})
-            res.headers["Access-Control-Allow-Origin"] = "*"
-            res.status_code = 400
-            return res
-        if file and fileFormat(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            res = jsonpify({"message": "File Uploaded Successfully."})
-            res.headers["Access-Control-Allow-Origin"] = "*"
-            res.status_code = 201
-            return res
-        else:
-            res = jsonpify({"message": "File Type Is Not csv."})
-            res.headers["Access-Control-Allow-Origin"] = "*"
-            res.status_code = 400
-            return res
-
-
-class getCUIInfos(Resource):
+class parseCSVFile(Resource):
     @staticmethod
     def get():
         res = jsonpify(processFile())
-        res.headers["Access-Control-Allow-Origin"] = "*"
         res.status_code = 200
         return res
 
 
-class resetData(Resource):
+class getProgress(Resource):
+    @staticmethod
+    def get():
+        user = request.args["u"]
+        uid = request.args["uid"]
+        res = jsonpify(getUserProgress(user, uid))
+        res.status_code = 200
+        return res
+
+
+class createProgress(Resource):
     @staticmethod
     def post():
-        res = jsonpify(reset())
-        res.status_code = 200
-        res.headers["Access-Control-Allow-Origin"] = "*"
+        data = request.json
+        res = jsonpify(createUserProgress(data))
+        res.status_code = 201
         return res
 
 
-api.add_resource(uploadCSVFile, "/assess/upload")
-api.add_resource(getCUIInfos, "/assess/info")
-api.add_resource(resetData, "/assess/reset")
+class updateProgress(Resource):
+    @staticmethod
+    def post():
+        uid = request.args["uid"]
+        data = request.json
+        res = jsonpify(updateUserProgress(uid, data))
+        res.status_code = 200
+        return res
+
+
+class getUserID(Resource):
+    @staticmethod
+    def get():
+        user = request.args["u"]
+        res = jsonpify(getUserId(user))
+        res.status_code = 200
+        return res
+
+
+api.add_resource(parseCSVFile, "/assess/parse")
+api.add_resource(getProgress, "/assess/progress/get")
+api.add_resource(updateProgress, "/assess/progress/update")
+api.add_resource(createProgress, "/assess/progress/create")
+api.add_resource(getUserID, "/assess/userid")
 
 if __name__ == "__main__":
     arguments = sys.argv

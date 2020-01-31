@@ -1,9 +1,7 @@
 import csv
 import glob
-import shutil
 import json
 from methods import *
-
 
 # Load the config file
 print("--------------------------------------------------")
@@ -13,15 +11,14 @@ with open('Config.json') as configFile:
 globalConfig = config
 WaitressConfig = config["WAITRESS"]
 ESConfig = config["ES"]
+progressConfig = config["PROGRESSES"]
 print("Config File Loaded.")
 print("--------------------------------------------------")
 
-EXTENSIONS = set(globalConfig["EXTENSIONS"])
-
 
 def processFile():
-    csvPath = globalConfig["UPLOADFOLDER"] + "/*.csv"
-    CSVPath = globalConfig["UPLOADFOLDER"] + "/*.CSV"
+    csvPath = globalConfig["DATAFOLDER"] + "/*.csv"
+    CSVPath = globalConfig["DATAFOLDER"] + "/*.CSV"
     csvFiles = glob.glob(csvPath)
     CSVFiles = glob.glob(CSVPath)
     files = csvFiles + CSVFiles
@@ -39,21 +36,29 @@ def processFile():
     return res
 
 
-def fileFormat(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in EXTENSIONS
+def getUserProgress(user, uid):
+    res = getProgress(user, uid, progressConfig)
+    return res
 
 
-def reset():
-    folder = globalConfig["UPLOADFOLDER"] + "/"
-    for filename in os.listdir(folder):
-        filePath = os.path.join(folder, filename)
-        filePart = filename.split(".")
-        fileType = filePart[len(filePart) - 1]
-        if fileType != "template" and fileType != "tpl":
-            try:
-                if os.path.isfile(filePath) or os.path.islink(filePath):
-                    os.unlink(filePath)
-                elif os.path.isdir(filePath):
-                    shutil.rmtree(filePath)
-            except Exception as err:
-                print("Failed To Remove %s. Error: %s" % (filePath, err))
+def createUserProgress(data):
+    res = createProgress(data, progressConfig)
+    return res
+
+
+def updateUserProgress(uid, data):
+    res = updateProgress(uid, data, progressConfig)
+    return res
+
+
+def getUserId(user):
+    userID = getUserUniqueID(user, progressConfig)
+    if userID is None:
+        res = {
+            "user_id": None
+        }
+    else:
+        res = {
+            "user_id": userID
+        }
+    return res
