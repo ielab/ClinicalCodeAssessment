@@ -102,13 +102,16 @@
                                     Preferred Term: <a v-bind:href="c.url" target="_blank">[[ c.pref_term ]]</a><br>
                                     <span class="span-sm">CUI: [[ c.cui ]]</span><br>
                                     <label class="form-radio form-inline">
-                                        <input type="radio" value="Perfect" v-model="c.rel"><i class="form-icon"></i> Perfect
+                                        <input type="radio" value="Acceptable" v-model="c.rel"><i class="form-icon"></i> Acceptable
                                     </label>
                                     <label class="form-radio form-inline">
                                         <input type="radio" value="Partial" v-model="c.rel"><i class="form-icon"></i> Partial
                                     </label>
                                     <label class="form-radio form-inline">
                                         <input type="radio" value="Poor" v-model="c.rel"><i class="form-icon"></i> Poor
+                                    </label>
+                                    <label class="form-radio form-inline">
+                                        <input type="radio" value="Incorrect" v-model="c.rel"><i class="form-icon"></i> Incorrect
                                     </label>
                                     <div class="divider"></div>
                                 </li>
@@ -119,6 +122,7 @@
                 <button v-if="ready" style="margin-top: 1%" class="btn btn-primary" id="save" v-on:click="saveResult">
                     <i class="icon icon-download"></i> Save
                 </button>
+                <link id="download"/>
             </div>
         </div>
         <!--suppress JSUnusedGlobalSymbols -->
@@ -236,8 +240,7 @@
                         request.setRequestHeader("Connection", "keep-alive")
                         request.send(null);
                     },
-                    // TODO: Finish this part
-                    saveResult: function (args) {
+                    saveResult: function () {
                         let self = this;
                         for (index in self.cuiInfo) {
                             for (i in self.cuiInfo[index].cuis) {
@@ -251,48 +254,48 @@
                         var csv = self.convertToCSV({
                             data: self.cuiInfo
                         });
-                        if (csv == null) return;
-
-                        filename = args.filename || 'export.csv';
-
+                        if (csv == null) {
+                            document.getElementById("msg").innerText = "No CSV File Generated.";
+                            document.getElementById("msg").classList.add("label");
+                            document.getElementById("msg").classList.add("label-error");
+                            return null;
+                        }
+                        filename = 'export.csv';
                         if (!csv.match(/^data:text\/csv/i)) {
                             csv = 'data:text/csv;charset=utf-8,' + csv;
                         }
                         data = encodeURI(csv);
-
                         link = document.getElementById("download");
                         link.setAttribute('href', data);
                         link.setAttribute('download', filename);
                         link.click();
                     },
                     convertToCSV: function (args) {
-                        var result, ctr, keys, columnDelimiter, lineDelimiter, data;
-
+                        var data;
                         data = args.data || null;
                         if (data == null || !data.length) {
+                            document.getElementById("msg").innerText = "Formating Error.";
+                            document.getElementById("msg").classList.add("label");
+                            document.getElementById("msg").classList.add("label-error");
                             return null;
                         }
-
-                        columnDelimiter = args.columnDelimiter || ',';
-                        lineDelimiter = args.lineDelimiter || '\n';
-
-                        keys = Object.keys(data[0]);
-
+                        columnDelimiter = ',';
+                        lineDelimiter = '\n';
+                        var keys = ["uid", "id", "diagnosis", "cui", "pref_term", "rel"];
+                        var result;
                         result = '';
                         result += keys.join(columnDelimiter);
                         result += lineDelimiter;
+                        var uid = 1;
+                        for (var i = 0; i < data.length; i++) {
+                            var prefixLine = data[i]["id"] + columnDelimiter + data[i]["diagnosis"];
+                            for (var k = 0; k < data[i]["cuis"].length; k++) {
+                                var latterLine = uid + columnDelimiter + prefixLine + columnDelimiter + data[i]["cuis"][k]["cui"] + columnDelimiter + data[i]["cuis"][k]["pref_term"] + columnDelimiter + data[i]["cuis"][k]["rel"] + lineDelimiter;
+                                uid++;
+                                result += latterLine;
+                            }
 
-                        data.forEach(function(item) {
-                            ctr = 0;
-                            keys.forEach(function(key) {
-                                if (ctr > 0) result += columnDelimiter;
-
-                                result += item[key];
-                                ctr++;
-                            });
-                            result += lineDelimiter;
-                        });
-
+                        }
                         return result;
                     }
                 }
