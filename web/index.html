@@ -9,7 +9,6 @@
         <link rel="stylesheet" href="static/spectre.min.css" type="text/css">
         <link rel="stylesheet" href="static/spectre-icons.min.css" type="text/css">
         <link rel="stylesheet" href="static/spectre-exp.min.css" type="text/css">
-        <link rel="stylesheet" href="/static/vis.min.css" type="text/css">
         <link rel="stylesheet" href="static/vue-multiselect.min.css" type="text/css">
         <link rel="stylesheet" href="static/logtail.css" type="text/css">
         <link rel="stylesheet" href="static/clinicalcodeassessment.css" type="text/css">
@@ -62,29 +61,31 @@
                     <div class="modal-container">
                         <div class="modal-header">
                             <button class="btn btn-sm float-right" v-on:click="closeModal"><i class="icon icon-cross"></i></button>
-                            <div class="modal-title h5">USER INFO</div>
+                            <div class="modal-title h5">INPUT YOUR ASSIGNED USERNAME</div>
                         </div>
                         <div class="divider"></div>
                         <div class="modal-body">
                             <div class="content">
                                 <div class="form-group">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" id="userNa" autofocus="autofocus" class="form-input" v-model="username" placeholder="Username" v-on:keyup="closeOnKey"/>
+                                    <input type="text" id="userNa" autofocus="autofocus" class="form-input" v-model="username" placeholder="USERNAME" v-on:keyup="closeOnKey"/>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                        <button id="modalCloseBtn" class="btn btn-primary" v-on:click="closeModal">Proceed</button>
+                        <button id="modalCloseBtn" class="btn btn-primary" v-on:click="closeModal">START</button>
                     </div>
                   </div>
                 </div>
             </div>
             <div v-if="init" class="panel p-2">
                 <div class="divider" data-content="CONTENT"></div>
+                <div v-if="init && !ready" class="toast toast-primary text-center" id="toast">
+                    This might be slow for the first time, will be much faster the next time.
+                </div>
                 <center><img v-if="init && !ready" style="width: 15%; margin-top: 0" src="static/Typing-1s-200px.gif"/></center>
                 <ul style="list-style-type: none">
                     <li v-if="ready && cuiInfo != null" v-for="item in cuiInfo">
-                        <button class="accordion-ac" v-bind:id="item.id" v-on:click="togglePanel(item.id)">[[ item.id ]]. [[ item.diagnosis ]]<span v-if="item.unchecked != 0" class="label label-warning float-right" style="width: 4%; text-align: center">[[ item.unchecked ]]</span><span v-if="item.unchecked === 0" class="label label-success float-right" style="text-align: center">FINISH</span></button>
+                        <button class="accordion-ac" v-bind:id="item.id" v-on:click="togglePanel(item.id)">[[ item.id ]]. [[ item.diagnosis ]]<span v-if="item.unchecked != 0" class="label label-warning float-right" style="width: 4%; text-align: center">[[ item.unchecked ]]</span><span v-if="item.unchecked === 0" class="label label-success float-right" style="text-align: center">FINISHED</span></button>
                         <div class="panel-ac" v-bind:id="item.id">
                             <ul style="list-style-type: none">
                                 <li v-for="c in item.cuis">
@@ -143,7 +144,6 @@
                                     unchecked--;
                                 }
                             }
-                            console.log(unchecked)
                             cuiInfo[i]["unchecked"] = unchecked;
                         }
                         self.cuiInfo = cuiInfo;
@@ -181,18 +181,20 @@
                           panel.style.maxHeight = panel.scrollHeight + "px";
                         }
                     },
-                    parseFile: function () {
+                    parseFile: async function () {
                         let self = this;
                         var url = "http://localhost:6688/assess/parse";
-                        axios.get(url)
+                        var res = await axios.get(url)
                         .then(response => {
                             if (response.status == 200) {
                                 self.cuiInfo = response.data;
+                                return response;
                             }
                         })
                         .catch(error => {
                             console.log(error);
                         });
+                        return res.data;
                     },
                     reset: function () {
                         this.cuiInfo = null;
@@ -268,7 +270,8 @@
                             if (response.status == 200) {
                                 var content = response.data;
                                 if (content["user_id"] == null) {
-                                    self.createProgress(self.username);
+                                    self.parseFile()
+                                    .then(res => self.createProgress(res, self.username));
                                 } else {
                                     self.userId = content["user_id"];
                                     self.getProgress(self.userId, self.username)
@@ -289,25 +292,26 @@
                                 var content = response.data;
                                 var source = content["hits"]["hits"][0]["_source"];
                                 self.finished = source["finished"];
-                                var temp = source["progress"];
-                                temp.replace("\'", "\"");
-                                console.log(temp);
-                                var progress = JSON.parse(source["progress"]);
-                                self.cuiInfo = progress;
-                                self.ready = true;
+                                if (source["progress"] == null) {
+                                    self.createProgress(self.username);
+                                    self.ready = true;
+                                } else {
+                                    var progress = JSON.parse(source["progress"]);
+                                    self.cuiInfo = progress;
+                                    self.ready = true;
+                                }
                             }
                         })
                         .catch(error => {
                            console.log(error);
                         });
                     },
-                    createProgress: function (username) {
+                    createProgress: function (res, username) {
                         let self = this;
-                        self.parseFile();
                         var url = "http://localhost:6688/assess/progress/create?u=" + username;
                         var data = {
                             "user": username,
-                            "progress": JSON.stringify(self.cuiInfo),
+                            "progress": JSON.stringify(res),
                             "finished": false
                         }
                         axios.post(url, data)
