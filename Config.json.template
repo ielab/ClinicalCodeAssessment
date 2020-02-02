@@ -1,7 +1,5 @@
 {
-  "UMLSURLPREFIX" : "http://linkedlifedata.com/resource/umls/id/",
-  "UPLOADFOLDER" : "data",
-  "EXTENSIONS" : ["csv"],
+  "DATAFOLDER" : "data",
   "WAITRESS" : {
     "PORT" : 6688,
     "HOST" : "localhost",
@@ -9,5 +7,17 @@
     "URLSCHEME" : "http",
     "IPV4" : true,
     "IPV6" : true
+  },
+  "ES" : {
+    "URL" : "",
+    "USERNAME" : "",
+    "SECRET" : "",
+    "UMLSURLPREFIX" : ""
+  },
+  "PROGRESSES" : {
+    "URL" : "",
+    "INDEX": "",
+    "USERNAME": "",
+    "SECRET": ""
   }
 }

@@ -1,10 +1,17 @@
 import requests
 
 
+def getResponse(Config, url, data, header):
+    if Config["USERNAME"] != "":
+        username = Config["USERNAME"]
+        secret = Config["SECRET"]
+        response = requests.post(url, data=None, json=data, headers=header, auth=(username, secret))
+    else:
+        response = requests.post(url, data=None, json=data, headers=header)
+    return response
+
+
 def getOneCUIInfo(item, ES):
-    url = ES["URL"]
-    username = ES["USERNAME"]
-    secret = ES["SECRET"]
     should = []
     for c in item:
         temp = {
@@ -23,7 +30,7 @@ def getOneCUIInfo(item, ES):
     header = {
         "Content-Type": "application/json"
     }
-    response = requests.post(url, data=None, json=data, headers=header, auth=(username, secret))
+    response = getResponse(ES, ES["URL"], data, header)
     cleanedContent = cleanData(response, ES)
     return cleanedContent
 
@@ -94,7 +101,7 @@ def getProgress(user, uid, progressConfig):
         }
     }
     url = progressConfig["URL"] + progressConfig["INDEX"] + "_search?pretty"
-    response = requests.post(url, data=None, json=query, headers=header)
+    response = getResponse(progressConfig, url, query, header)
     res = response.json()
     return res
 
@@ -104,7 +111,7 @@ def createProgress(data, progressConfig):
         "Content-Type": "application/json"
     }
     url = progressConfig["URL"] + progressConfig["INDEX"] + "_doc/?refresh=true"
-    response = requests.post(url, data=None, json=data, headers=header)
+    response = getResponse(progressConfig, url, data, header)
     res = response.json()
     return res
 
@@ -114,7 +121,7 @@ def updateProgress(uid, data, progressConfig):
         "Content-Type": "application/json"
     }
     url = progressConfig["URL"] + progressConfig["INDEX"] + "_doc/" + uid + "?refresh=true"
-    response = requests.post(url, data=None, json=data, headers=header)
+    response = getResponse(progressConfig, url, data, header)
     res = response.json()
     return res
 
@@ -137,7 +144,7 @@ def getUserUniqueID(user, progressConfig):
         "Content-Type": "application/json"
     }
     url = progressConfig["URL"] + progressConfig["INDEX"] + "_search?pretty"
-    response = requests.post(url, data=None, json=query, headers=header)
+    response = getResponse(progressConfig, url, query, header)
     content = response.json()
     hit = content["hits"]["total"]["value"]
     if hit > 0:
