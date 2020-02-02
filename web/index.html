@@ -67,7 +67,7 @@
                         <div class="modal-body">
                             <div class="content">
                                 <div class="form-group">
-                                    <input type="text" id="userNa" autofocus="autofocus" class="form-input" v-model="username" placeholder="USERNAME" v-on:keyup="closeOnKey"/>
+                                    <input type="text" id="userNa" class="form-input" v-model="username" placeholder="USERNAME" v-on:keyup="closeOnKey" autofocus/>
                                 </div>
                             </div>
                         </div>
@@ -79,7 +79,7 @@
             </div>
             <div v-if="init" class="panel p-2">
                 <div class="divider" data-content="CONTENT"></div>
-                <div v-if="init && !ready" class="toast toast-primary text-center" id="toast">
+                <div v-if="init && first" class="toast toast-primary text-center" id="toast">
                     This might be slow for the first time, will be much faster the next time.
                 </div>
                 <center><img v-if="init && !ready" style="width: 15%; margin-top: 0" src="static/Typing-1s-200px.gif"/></center>
@@ -129,8 +129,8 @@
                     init: false,
                     username: null,
                     userId: null,
-                    cookie: false,
                     finished: false,
+                    first: false,
                 },
                 methods: {
                     updateStatus: _.debounce(function () {
@@ -183,11 +183,13 @@
                     },
                     parseFile: async function () {
                         let self = this;
+                        self.first = true;
                         var url = "http://localhost:6688/assess/parse";
                         var res = await axios.get(url)
                         .then(response => {
                             if (response.status == 200) {
                                 self.cuiInfo = response.data;
+                                self.first = false;
                                 return response;
                             }
                         })
@@ -195,14 +197,6 @@
                             console.log(error);
                         });
                         return res.data;
-                    },
-                    reset: function () {
-                        this.cuiInfo = null;
-                        this.ready = false;
-                        this.init = false;
-                        this.finished = false;
-                        document.getElementById("msg").classList = [];
-                        document.getElementById("msg").innerText = null;
                     },
                     saveResult: function () {
                         let self = this;
@@ -274,7 +268,7 @@
                                     .then(res => self.createProgress(res, self.username));
                                 } else {
                                     self.userId = content["user_id"];
-                                    self.getProgress(self.userId, self.username)
+                                    self.getProgress(self.userId, self.username);
                                 }
                             }
                         })
@@ -346,7 +340,14 @@
                            console.log(error);
                         });
                     }
-                }
+                },
+                mounted: function () {
+                        var modal = document.getElementById("user");
+                        if (modal.classList.contains("active")) {
+                            var input = modal.getElementsByTagName("input")[0];
+                            input.focus();
+                        }
+                    }
             })
         </script>
     </body>
