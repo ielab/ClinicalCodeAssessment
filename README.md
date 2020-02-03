@@ -1,8 +1,8 @@
 # Clinical Code Assessment
 
 - Need to have elastic search running and setup the configurations in the Config file
-    - PROGRESSES is the index for saving user's progress
-    - ES is the index used to search for UMLS
+    - `PROGRESSES` is the index for saving user's progress
+    - `ES` is the index used to search for UMLS
 
 - Run Python project by using the following command:
     - Development Env:
