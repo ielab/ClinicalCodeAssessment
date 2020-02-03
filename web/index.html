@@ -110,9 +110,25 @@
                     </li>
                 </ul>
                 <button v-if="ready" style="margin-top: 1%" class="btn btn-primary" id="save" v-on:click="saveResult">
-                    <i class="icon icon-download"></i> Save
+                    <i class="icon icon-check"></i> FINISH
                 </button>
-                <link id="download"/>
+                <div class="modal" id="finish">
+                    <a href="#/" class="modal-overlay" aria-label="Close"></a>
+                    <div class="modal-container">
+                        <div class="modal-body">
+                            <div class="content" style="vertical-align: middle">
+                                <div class="text-bold text-center">
+                                    <h2>All Works Are Saved</h2>
+                                    <h2>Thank You For Your Efforts<h2>
+                                </div><br>
+                                <div class="text-center text-bold">
+                                    You May Close The Window Now
+                                </div><br>
+                                <img class="img-responsive img-fit-cover" style="width: 50%; height: 50%; margin: auto" src="static/ty.jpg"/>
+                            </div>
+                        </div>
+                  </div>
+                </div>
             </div>
         </div>
         <script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -133,6 +149,9 @@
                     first: false,
                 },
                 methods: {
+                    closeFinishModal: function () {
+                        close();
+                    },
                     updateStatus: _.debounce(function () {
                         let self = this;
                         var cuiInfo = self.cuiInfo;
@@ -210,49 +229,8 @@
                         }
                         self.finished = true;
                         self.updateProgress();
-                        var data, filename, link;
-                        var csv = self.convertToCSV({
-                            data: self.cuiInfo
-                        });
-                        if (csv == null) {
-                            console.log("No CSV File Generated.")
-                            return null;
-                        }
-                        filename = 'export.csv';
-                        if (!csv.match(/^data:text\/csv/i)) {
-                            csv = 'data:text/csv;charset=utf-8,' + csv;
-                        }
-                        data = encodeURI(csv);
-                        link = document.getElementById("download");
-                        link.setAttribute('href', data);
-                        link.setAttribute('download', filename);
-                        link.click();
-                    },
-                    convertToCSV: function (args) {
-                        var data;
-                        data = args.data || null;
-                        if (data == null || !data.length) {
-                            console.log("Formating Error.");
-                            return null;
-                        }
-                        columnDelimiter = ',';
-                        lineDelimiter = '\n';
-                        var keys = ["uid", "id", "diagnosis", "cui", "pref_term", "rel"];
-                        var result;
-                        result = '';
-                        result += keys.join(columnDelimiter);
-                        result += lineDelimiter;
-                        var uid = 1;
-                        for (var i = 0; i < data.length; i++) {
-                            var prefixLine = data[i]["id"] + columnDelimiter + data[i]["diagnosis"];
-                            for (var k = 0; k < data[i]["cuis"].length; k++) {
-                                var latterLine = uid + columnDelimiter + prefixLine + columnDelimiter + data[i]["cuis"][k]["cui"] + columnDelimiter + data[i]["cuis"][k]["pref_term"] + columnDelimiter + data[i]["cuis"][k]["rel"] + lineDelimiter;
-                                uid++;
-                                result += latterLine;
-                            }
-
-                        }
-                        return result;
+                        var finishModal = document.getElementById("finish");
+                        finishModal.classList.add("active");
                     },
                     getUserId: function () {
                         let self = this;
