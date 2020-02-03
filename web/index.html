@@ -85,7 +85,7 @@
                 <center><img v-if="init && !ready" style="width: 15%; margin-top: 0" src="static/Typing-1s-200px.gif"/></center>
                 <ul style="list-style-type: none">
                     <li v-if="ready && cuiInfo != null" v-for="item in cuiInfo">
-                        <button class="accordion-ac" v-bind:id="item.id" v-on:click="togglePanel(item.id)">[[ item.id ]]. [[ item.diagnosis ]]<span v-if="item.unchecked != 0" class="label label-warning float-right" style="width: 4%; text-align: center">[[ item.unchecked ]]</span><span v-if="item.unchecked === 0" class="label label-success float-right" style="text-align: center">FINISHED</span></button>
+                        <button class="accordion-ac" v-bind:id="item.id" v-on:click="togglePanel(item.id)"><strong>[[ item.id ]]. [[ item.diagnosis ]]</strong><span v-if="item.unchecked != 0" class="label label-warning float-right" style="width: 4%; text-align: center">[[ item.unchecked ]]</span><span v-if="item.unchecked === 0" class="label label-success float-right" style="text-align: center">FINISHED</span></button>
                         <div class="panel-ac" v-bind:id="item.id">
                             <ul style="list-style-type: none">
                                 <li v-for="c in item.cuis">
