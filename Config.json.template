@@ -12,7 +12,7 @@
     "URL" : "",
     "USERNAME" : "",
     "SECRET" : "",
-    "UMLSURLPREFIX" : ""
+    "UMLSURLPREFIX" : "http://linkedlifedata.com/resource/umls/id/"
   },
   "PROGRESSES" : {
     "URL" : "",
