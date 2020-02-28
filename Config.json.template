@@ -19,5 +19,11 @@
     "INDEX": "",
     "USERNAME": "",
     "SECRET": ""
+  },
+  "DATA" : {
+    "URL" : "http://localhost:9200/",
+    "INDEX" : "data/",
+    "USERNAME" : "",
+    "SECRET" : ""
   }
 }
