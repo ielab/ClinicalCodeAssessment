@@ -4,17 +4,25 @@ from flask_cors import CORS
 from flask_jsonpify import jsonpify
 from flask_restful import Resource, Api
 from waitress import serve
+from apscheduler.schedulers.background import BackgroundScheduler
 from middleware import *
+
+# Two empty ES Index should be created beforehand, progress index and data index
+
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(func=updateContent, trigger="interval", seconds=300)
+scheduler.start()
+
 
 app = Flask(__name__)
 CORS(app)
 api = Api(app)
 
 
-class parseCSVFile(Resource):
+class getFileContent(Resource):
     @staticmethod
     def get():
-        res = jsonpify(processFile())
+        res = jsonpify(getContent())
         res.status_code = 200
         return res
 
@@ -57,7 +65,7 @@ class getUserID(Resource):
         return res
 
 
-api.add_resource(parseCSVFile, "/assess/parse")
+api.add_resource(getFileContent, "/assess/content")
 api.add_resource(getProgress, "/assess/progress/get")
 api.add_resource(updateProgress, "/assess/progress/update")
 api.add_resource(createProgress, "/assess/progress/create")

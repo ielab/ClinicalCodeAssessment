@@ -200,7 +200,7 @@
                     parseFile: async function () {
                         let self = this;
                         self.first = true;
-                        var url = "http://localhost:6688/assess/parse";
+                        var url = "http://localhost:6688/assess/content";
                         var res = await axios.get(url)
                         .then(response => {
                             if (response.status == 200) {
@@ -259,13 +259,12 @@
                         .then(response => {
                             if (response.status == 200) {
                                 var content = response.data;
-                                var source = content["hits"]["hits"][0]["_source"];
-                                self.finished = source["finished"];
-                                if (source["progress"] == null) {
+                                self.finished = content["finished"];
+                                if (content["progress"] == null) {
                                     self.createProgress(self.username);
                                     self.ready = true;
                                 } else {
-                                    var progress = JSON.parse(source["progress"]);
+                                    var progress = JSON.parse(content["progress"]);
                                     self.cuiInfo = progress;
                                     self.ready = true;
                                 }

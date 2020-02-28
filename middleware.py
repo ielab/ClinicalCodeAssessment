@@ -1,6 +1,7 @@
 import csv
 import glob
 import json
+import datetime
 from methods import *
 
 # Load the config file
@@ -12,6 +13,7 @@ globalConfig = config
 WaitressConfig = config["WAITRESS"]
 ESConfig = config["ES"]
 progressConfig = config["PROGRESSES"]
+dataConfig = config["DATA"]
 print("Config File Loaded.")
 print("--------------------------------------------------")
 
@@ -19,23 +21,37 @@ print("--------------------------------------------------")
 def processFile():
     csvPath = globalConfig["DATAFOLDER"] + "/*.csv"
     CSVPath = globalConfig["DATAFOLDER"] + "/*.CSV"
+    txtPath = globalConfig["DATAFOLDER"] + "/*.txt"
     csvFiles = glob.glob(csvPath)
     CSVFiles = glob.glob(CSVPath)
-    files = csvFiles + CSVFiles
+    txtFiles = glob.glob(txtPath)
+    files = csvFiles + CSVFiles + txtFiles
     content = []
     with open(files[0], "r") as file:
         reader = csv.reader(file)
-        unique_id = 1
         for row in reader:
-            temp = {"ID": unique_id, "DIAGNOSIS": row[0], "CUI_SET": row[1:]}
+            temp = {"DIAGNOSIS": row[0], "CUI_SET": row[1:]}
             content.append(temp)
-            unique_id += 1
     res = getCUIPreferredTerms(content, ESConfig)
     return res
 
 
+def updateContent():
+    newContent = processFile()
+    f = open("update_log", "a+")
+    f.write(str(datetime.datetime.now()) + "  Updating File...\n")
+    f.close()
+    print(str(datetime.datetime.now()) + "  Updating File...")
+    exists = checkContentExistence(dataConfig)
+    if exists is not None:
+        oriContent = json.loads(exists)
+        updateContentInES(dataConfig, newContent, oriContent)
+    else:
+        addContent(dataConfig, newContent)
+
+
 def getUserProgress(user, uid):
-    res = getProgress(user, uid, progressConfig)
+    res = getProgress(user, uid, progressConfig, dataConfig)
     return res
 
 
@@ -59,4 +75,9 @@ def getUserId(user):
         res = {
             "user_id": userID
         }
+    return res
+
+
+def getContent():
+    res = getFileContent(dataConfig)
     return res
