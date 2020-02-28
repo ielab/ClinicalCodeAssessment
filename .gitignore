@@ -133,3 +133,4 @@ dmypy.json
 /test_data
 output/results.csv
 Config.json
+.vscode/

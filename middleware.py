@@ -25,13 +25,11 @@ def processFile():
     content = []
     with open(files[0], "r") as file:
         reader = csv.reader(file)
+        unique_id = 1
         for row in reader:
-            temp = {}
-            if row[0] != "0":
-                temp["ID"] = row[0]
-                temp["DIAGNOSIS"] = row[1]
-                temp["CUI_SET"] = row[2:]
-                content.append(temp)
+            temp = {"ID": unique_id, "DIAGNOSIS": row[0], "CUI_SET": row[1:]}
+            content.append(temp)
+            unique_id += 1
     res = getCUIPreferredTerms(content, ESConfig)
     return res
 
