@@ -25,15 +25,26 @@ def processFile():
     csvFiles = glob.glob(csvPath)
     CSVFiles = glob.glob(CSVPath)
     txtFiles = glob.glob(txtPath)
-    files = csvFiles + CSVFiles + txtFiles
+    files = csvFiles + CSVFiles
     content = []
-    with open(files[0], "r") as file:
-        reader = csv.reader(file)
-        for row in reader:
-            temp = {"DIAGNOSIS": row[0], "CUI_SET": row[1:]}
+    if len(txtFiles) > 0:
+        with open(txtFiles[0], "r") as file:
+            fileContent = file.readlines()
+        fileContent = [x.strip() for x in fileContent]
+        for line in fileContent:
+            splitedLine = line.split(',')
+            temp = {"DIAGNOSIS": splitedLine[0], "CUI_SET": splitedLine[1:]}
             content.append(temp)
-    res = getCUIPreferredTerms(content, ESConfig)
-    return res
+        res = getCUIPreferredTerms(content, ESConfig)
+        return res
+    else:
+        with open(files[0], "r") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                temp = {"DIAGNOSIS": row[0], "CUI_SET": row[1:]}
+                content.append(temp)
+        res = getCUIPreferredTerms(content, ESConfig)
+        return res
 
 
 def updateContent():

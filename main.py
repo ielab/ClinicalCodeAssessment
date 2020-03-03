@@ -10,7 +10,7 @@ from middleware import *
 # Two empty ES Index should be created beforehand, progress index and data index
 
 scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_job(func=updateContent, trigger="interval", seconds=300)
+scheduler.add_job(func=updateContent, trigger="interval", seconds=30)
 scheduler.start()
 
 
