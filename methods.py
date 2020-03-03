@@ -206,11 +206,12 @@ def checkContentExistence(dataConfig):
         indexID = f.read()
     except FileNotFoundError:
         indexID = None
-    if indexID is not None:
+    if indexID is not None and indexID != "":
         url = dataConfig["URL"] + dataConfig["INDEX"] + "_doc/" + indexID
         response = getResponse(dataConfig, url, method="get")
         if response is not None:
             content = response.json()
+            print(content)
             if content["found"] is True:
                 return content["_source"]["content"]
             else:
