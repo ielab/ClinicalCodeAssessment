@@ -211,7 +211,6 @@ def checkContentExistence(dataConfig):
         response = getResponse(dataConfig, url, method="get")
         if response is not None:
             content = response.json()
-            print(content)
             if content["found"] is True:
                 return content["_source"]["content"]
             else:
