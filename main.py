@@ -9,8 +9,10 @@ from middleware import *
 
 # Two empty ES Index should be created beforehand, progress index and data index
 
+with open('Config.json') as configFile:
+    config = json.load(configFile)
 scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_job(func=updateContent, trigger="interval", seconds=30)
+scheduler.add_job(func=updateContent, trigger="interval", seconds=config["UPDATE_INTERVAL"])
 scheduler.start()
 
 

@@ -25,5 +25,6 @@
     "INDEX" : "data/",
     "USERNAME" : "",
     "SECRET" : ""
-  }
+  },
+  "UPDATE_INTERVAL" : 300
 }
